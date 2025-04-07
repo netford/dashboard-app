@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import Chart from './Chart';
+import DataCard from './DataCard';
 import { demoData } from './demoData';
 
 const Dashboard = () => {
@@ -13,8 +14,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   // Состояние ошибки
   const [error, setError] = useState(null);
+  // Состояние для определения мобильного представления
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Импорт демо-данных
+  // Функция для определения мобильного устройства
+  const checkIsMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
   // Функция для загрузки данных с сервера
   const fetchData = async () => {
     try {
@@ -45,6 +52,17 @@ const Dashboard = () => {
   // Эффект для загрузки данных при монтировании компонента
   useEffect(() => {
     fetchData();
+    
+    // Проверяем размер экрана при загрузке
+    checkIsMobile();
+    
+    // Добавляем обработчик события изменения размера окна
+    window.addEventListener('resize', checkIsMobile);
+    
+    // Очистка при размонтировании
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+    };
   }, []);
 
   // Функция для обработки клика по строке
@@ -64,15 +82,28 @@ const Dashboard = () => {
     return '';
   };
 
-  if (loading) return <div>Загрузка данных...</div>;
-  if (error) return <div>Ошибка: {error}</div>;
+  if (loading) return <div className="loading">Загрузка данных...</div>;
+  if (error) return <div className="error">Ошибка: {error}</div>;
 
-  return (
-    <div className="dashboard-container">
-      <h2>Аналитика показателей</h2>
-      
-      {selectedRow && <Chart selectedRow={selectedRow} />}
-      
+  // Отображение для мобильного устройства (карточки)
+  const renderMobileView = () => {
+    return (
+      <div className="cards-container">
+        {data.map((row, index) => (
+          <DataCard 
+            key={index} 
+            data={row} 
+            isSelected={selectedRow === row.name}
+            onClick={handleRowClick}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  // Отображение для десктопа (таблица)
+  const renderDesktopView = () => {
+    return (
       <table className="dashboard-table">
         <thead>
           <tr>
@@ -97,6 +128,16 @@ const Dashboard = () => {
           ))}
         </tbody>
       </table>
+    );
+  };
+
+  return (
+    <div className="dashboard-container">
+      <h2 className="dashboard-title">Аналитика показателей</h2>
+      
+      {selectedRow && <Chart selectedRow={selectedRow} />}
+      
+      {isMobile ? renderMobileView() : renderDesktopView()}
     </div>
   );
 };

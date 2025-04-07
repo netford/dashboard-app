@@ -27,18 +27,45 @@ const Chart = ({ selectedRow }) => {
     // Сохраняем текущее значение ссылки в переменную внутри эффекта
     const currentChartRef = chartRef.current;
     
-    // Создание графика
-    Highcharts.chart(currentChartRef, {
+    // Определяем, является ли устройство мобильным
+    const isMobile = window.innerWidth < 768;
+    
+    // Настройки для мобильного устройства
+    const mobileOptions = {
+      chart: {
+        height: 220  // Меньше высота для мобильных
+      },
       title: {
-        text: `Динамика показателя "${selectedRow}"`
+        text: isMobile ? selectedRow : `Динамика показателя "${selectedRow}"`,
+        style: {
+          fontSize: isMobile ? '14px' : '18px'
+        }
       },
       xAxis: {
-        categories: ['6 дней назад', '5 дней назад', '4 дня назад', '3 дня назад', '2 дня назад', 'Вчера', 'Сегодня']
+        categories: isMobile 
+          ? ['6д', '5д', '4д', '3д', '2д', 'Вч', 'Сег'] // Сокращенные метки для мобильных
+          : ['6 дней назад', '5 дней назад', '4 дня назад', '3 дня назад', '2 дня назад', 'Вчера', 'Сегодня'],
+        labels: {
+          style: {
+            fontSize: isMobile ? '10px' : '12px'
+          }
+        }
       },
       yAxis: {
         title: {
-          text: 'Значение'
+          text: isMobile ? '' : 'Значение', // Убираем заголовок оси Y на мобильных
+          style: {
+            fontSize: isMobile ? '10px' : '12px'
+          }
+        },
+        labels: {
+          style: {
+            fontSize: isMobile ? '10px' : '12px'
+          }
         }
+      },
+      legend: {
+        enabled: false // Отключаем легенду для мобильных
       },
       series: [{
         name: selectedRow,
@@ -49,17 +76,69 @@ const Chart = ({ selectedRow }) => {
         line: {
           marker: {
             enabled: true,
-            radius: 6
+            radius: isMobile ? 4 : 6  // Меньший размер маркеров для мобильных
           }
         }
       },
       credits: {
         enabled: false
-      }
-    });
+      },
+      // Уменьшаем отступы для мобильных
+      spacing: isMobile ? [10, 10, 15, 10] : [25, 25, 30, 25]
+    };
     
-    // Очистка при размонтировании, используем сохранённую переменную
+    // Создание графика с адаптивными настройками
+    Highcharts.chart(currentChartRef, mobileOptions);
+    
+    // Функция обработки изменения размера окна
+    const handleResize = () => {
+      const chart = Highcharts.charts.find(chart => chart && chart.renderTo === currentChartRef);
+      if (chart) {
+        const newIsMobile = window.innerWidth < 768;
+        
+        // Обновляем настройки при изменении режима просмотра
+        if ((newIsMobile && !isMobile) || (!newIsMobile && isMobile)) {
+          chart.update({
+            chart: {
+              height: newIsMobile ? 220 : 300
+            },
+            title: {
+              text: newIsMobile ? selectedRow : `Динамика показателя "${selectedRow}"`,
+              style: {
+                fontSize: newIsMobile ? '14px' : '18px'
+              }
+            },
+            xAxis: {
+              categories: newIsMobile 
+                ? ['6д', '5д', '4д', '3д', '2д', 'Вч', 'Сег']
+                : ['6 дней назад', '5 дней назад', '4 дня назад', '3 дня назад', '2 дня назад', 'Вчера', 'Сегодня'],
+              labels: {
+                style: {
+                  fontSize: newIsMobile ? '10px' : '12px'
+                }
+              }
+            },
+            yAxis: {
+              title: {
+                text: newIsMobile ? '' : 'Значение',
+                style: {
+                  fontSize: newIsMobile ? '10px' : '12px'
+                }
+              }
+            },
+            spacing: newIsMobile ? [10, 10, 15, 10] : [25, 25, 30, 25]
+          });
+        }
+      }
+    };
+    
+    // Добавляем обработчик события изменения размера окна
+    window.addEventListener('resize', handleResize);
+    
+    // Очистка при размонтировании
     return () => {
+      window.removeEventListener('resize', handleResize);
+      
       if (currentChartRef) {
         // Уничтожение графика, если он был создан
         const chart = Highcharts.charts.find(chart => chart && chart.renderTo === currentChartRef);
@@ -72,7 +151,7 @@ const Chart = ({ selectedRow }) => {
 
   return (
     <div className="chart-container">
-      <div ref={chartRef} style={{ width: '100%', height: '300px' }}></div>
+      <div ref={chartRef} style={{ width: '100%', height: 'auto', minHeight: '220px' }}></div>
     </div>
   );
 };

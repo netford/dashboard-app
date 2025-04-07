@@ -1,0 +1,62 @@
+/* src/components/DataCard.css */
+.data-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .data-card.selected {
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    border-left: 4px solid #1890ff;
+  }
+  
+  .card-title {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+  }
+  
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .card-label {
+    font-size: 14px;
+    color: #666;
+    flex: 1;
+  }
+  
+  .card-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    text-align: right;
+  }
+  
+  .card-value.positive {
+    color: #52c41a;
+    background-color: rgba(82, 196, 26, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .card-value.negative {
+    color: #f5222d;
+    background-color: rgba(245, 34, 45, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
