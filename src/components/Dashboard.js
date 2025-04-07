@@ -65,7 +65,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Функция для обработки клика по строке
+  // Функция для обработки клика по строке/карточке
   const handleRowClick = (rowName) => {
     setSelectedRow(rowName);
   };
@@ -88,15 +88,20 @@ const Dashboard = () => {
   // Отображение для мобильного устройства (карточки)
   const renderMobileView = () => {
     return (
-      <div className="cards-container">
-        {data.map((row, index) => (
-          <DataCard 
-            key={index} 
-            data={row} 
-            isSelected={selectedRow === row.name}
-            onClick={handleRowClick}
-          />
-        ))}
+      <div className="mobile-view">
+        <div className="fixed-chart-area">
+          {selectedRow && <Chart selectedRow={selectedRow} />}
+        </div>
+        <div className="scrollable-cards">
+          {data.map((row, index) => (
+            <DataCard 
+              key={index} 
+              data={row} 
+              isSelected={selectedRow === row.name}
+              onClick={handleRowClick}
+            />
+          ))}
+        </div>
       </div>
     );
   };
@@ -104,38 +109,40 @@ const Dashboard = () => {
   // Отображение для десктопа (таблица)
   const renderDesktopView = () => {
     return (
-      <table className="dashboard-table">
-        <thead>
-          <tr>
-            <th>Показатель</th>
-            <th>Текущий день</th>
-            <th>Вчера</th>
-            <th>Динамика</th>
-            <th>Этот день недели</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, index) => (
-            <tr key={index} onClick={() => handleRowClick(row.name)} className={selectedRow === row.name ? 'selected' : ''}>
-              <td>{row.name}</td>
-              <td>{row.current}</td>
-              <td>{row.yesterday}</td>
-              <td className={getCellClass(row.change)}>
-                {formatPercent(row.change)}
-              </td>
-              <td>{row.weekday}</td>
+      <>
+        {selectedRow && <Chart selectedRow={selectedRow} />}
+        
+        <table className="dashboard-table">
+          <thead>
+            <tr>
+              <th>Показатель</th>
+              <th>Текущий день</th>
+              <th>Вчера</th>
+              <th>Динамика</th>
+              <th>Этот день недели</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((row, index) => (
+              <tr key={index} onClick={() => handleRowClick(row.name)} className={selectedRow === row.name ? 'selected' : ''}>
+                <td>{row.name}</td>
+                <td>{row.current}</td>
+                <td>{row.yesterday}</td>
+                <td className={getCellClass(row.change)}>
+                  {formatPercent(row.change)}
+                </td>
+                <td>{row.weekday}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
     );
   };
 
   return (
     <div className="dashboard-container">
       <h2 className="dashboard-title">Аналитика показателей</h2>
-      
-      {selectedRow && <Chart selectedRow={selectedRow} />}
       
       {isMobile ? renderMobileView() : renderDesktopView()}
     </div>
